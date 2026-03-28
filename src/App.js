@@ -1,3 +1,4 @@
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Analytics } from '@vercel/analytics/react';
 import { useState } from 'react';
 
@@ -201,6 +202,7 @@ export default function App() {
         {tab === 2 && <CosmosTab />}
       </div>
       <Analytics />
+      <SpeedInsights />
     </div>
   );
 }
