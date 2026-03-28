@@ -174,9 +174,21 @@ export default function App() {
           <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 700, margin: 0 }}>⏳ La vie en semaines</h1>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: 0 }}>{years} ans · {pct}% vécu</p>
         </div>
-        <button onClick={() => setStats(null)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
-          ← Recommencer
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => {
+            if (navigator.share) {
+              navigator.share({ title: 'La vie en semaines', text: 'Visualise ta vie en semaines 🕐', url: 'https://ma-vie-en-semaines.vercel.app' });
+            } else {
+              navigator.clipboard.writeText('https://ma-vie-en-semaines.vercel.app');
+              alert('Lien copié !');
+            }
+          }} style={{ background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+            🔗 Partager
+          </button>
+          <button onClick={() => setStats(null)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
+            ← Recommencer
+          </button>
+        </div>
       </div>
       <div style={{ height: 4, background: 'rgba(255,255,255,0.08)' }}>
         <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #7c3aed, #a78bfa)', transition: 'width 1s ease' }} />
