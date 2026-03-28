@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 const fmt = (num) => new Intl.NumberFormat('fr-FR').format(num);
 
@@ -40,9 +40,143 @@ export default function App() {
   const [stats, setStats] = useState(null);
   const [tab, setTab] = useState(0);
   const [hover, setHover] = useState(null);
+  const [storyGenerated, setStoryGenerated] = useState(false);
+  const canvasRef = useRef(null);
 
   const handleStart = () => {
     if (birthdate) setStats(calculateStats(birthdate));
+  };
+
+  const generateStory = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    canvas.width = 1080;
+    canvas.height = 1920;
+
+    // Background gradient
+    const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
+    grad.addColorStop(0, '#0f0c29');
+    grad.addColorStop(0.5, '#302b63');
+    grad.addColorStop(1, '#24243e');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1080, 1920);
+
+    // Subtle grid dots
+    ctx.fillStyle = 'rgba(167, 139, 250, 0.08)';
+    for (let x = 60; x < 1080; x += 40) {
+      for (let y = 60; y < 1920; y += 40) {
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Top accent line
+    const lineGrad = ctx.createLinearGradient(0, 0, 1080, 0);
+    lineGrad.addColorStop(0, '#7c3aed');
+    lineGrad.addColorStop(1, '#a78bfa');
+    ctx.fillStyle = lineGrad;
+    ctx.fillRect(0, 0, 1080, 8);
+
+    // Hourglass emoji
+    ctx.font = '160px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⏳', 540, 340);
+
+    // Title
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 90px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('La vie en semaines', 540, 480);
+
+    // Subtitle
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '48px sans-serif';
+    ctx.fillText(`${stats.years} ans · ${stats.pct}% de la vie vécue`, 540, 570);
+
+    // Progress bar background
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.beginPath();
+    ctx.roundRect(80, 620, 920, 24, 12);
+    ctx.fill();
+
+    // Progress bar fill
+    const barGrad = ctx.createLinearGradient(80, 0, 1000, 0);
+    barGrad.addColorStop(0, '#7c3aed');
+    barGrad.addColorStop(1, '#a78bfa');
+    ctx.fillStyle = barGrad;
+    ctx.beginPath();
+    ctx.roundRect(80, 620, 920 * stats.pct / 100, 24, 12);
+    ctx.fill();
+
+    // Stats cards
+    const statsData = [
+      { num: '1', label: 'Semaines vécues', value: fmt(stats.weeksLived), icon: '📅' },
+      { num: '2', label: 'Jours vécus', value: fmt(stats.daysLived), icon: '☀️' },
+      { num: '3', label: 'Battements de cœur', value: fmt(stats.heartbeats), icon: '❤️' },
+      { num: '4', label: 'Respirations', value: fmt(stats.breaths), icon: '🌬️' },
+    ];
+
+    statsData.forEach((s, i) => {
+      const y = 720 + i * 240;
+
+      // Card background
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.beginPath();
+      ctx.roundRect(80, y, 920, 200, 24);
+      ctx.fill();
+
+      // Card border
+      ctx.strokeStyle = 'rgba(167, 139, 250, 0.3)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(80, y, 920, 200, 24);
+      ctx.stroke();
+
+      // Number badge
+      const badgeGrad = ctx.createLinearGradient(110, y + 60, 200, y + 140);
+      badgeGrad.addColorStop(0, '#7c3aed');
+      badgeGrad.addColorStop(1, '#a78bfa');
+      ctx.fillStyle = badgeGrad;
+      ctx.beginPath();
+      ctx.arc(155, y + 100, 50, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 52px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(s.num, 155, y + 118);
+
+      // Icon
+      ctx.font = '52px serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(s.icon, 230, y + 85);
+
+      // Label
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.font = '38px sans-serif';
+      ctx.fillText(s.label, 230, y + 135);
+
+      // Value
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 56px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(s.value, 970, y + 118);
+    });
+
+    // Footer
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '38px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ma-vie-en-semaines.vercel.app', 540, 1860);
+
+    setStoryGenerated(true);
+
+    // Download
+    const link = document.createElement('a');
+    link.download = 'ma-vie-en-semaines.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   };
 
   if (!stats) {
@@ -53,17 +187,10 @@ export default function App() {
           <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 700, margin: '0 0 8px' }}>La vie en semaines</h1>
           <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 15, marginBottom: 36 }}>Visualisez votre temps sur Terre d'une façon que vous n'avez jamais vue.</p>
           <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'left', marginBottom: 8, letterSpacing: 1, textTransform: 'uppercase' }}>Date de naissance</label>
-          <input
-            type="date"
-            value={birthdate}
-            onChange={e => setBirthdate(e.target.value)}
-            style={{ width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: 16, boxSizing: 'border-box', marginBottom: 20, outline: 'none', colorScheme: 'dark' }}
-          />
-          <button
-            onClick={handleStart}
-            disabled={!birthdate}
-            style={{ width: '100%', padding: '15px', borderRadius: 12, border: 'none', background: birthdate ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 16, fontWeight: 600, cursor: birthdate ? 'pointer' : 'not-allowed', transition: 'all .2s', letterSpacing: 0.5 }}
-          >
+          <input type="date" value={birthdate} onChange={e => setBirthdate(e.target.value)}
+            style={{ width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: 16, boxSizing: 'border-box', marginBottom: 20, outline: 'none', colorScheme: 'dark' }} />
+          <button onClick={handleStart} disabled={!birthdate}
+            style={{ width: '100%', padding: '15px', borderRadius: 12, border: 'none', background: birthdate ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 16, fontWeight: 600, cursor: birthdate ? 'pointer' : 'not-allowed', transition: 'all .2s', letterSpacing: 0.5 }}>
             Découvrir ma vie →
           </button>
         </div>
@@ -82,18 +209,8 @@ export default function App() {
         const past = w < weeksLived;
         const current = w === weeksLived;
         cells.push(
-          <div key={w}
-            onMouseEnter={() => setHover(w)}
-            onMouseLeave={() => setHover(null)}
-            style={{
-              width: 9, height: 9, margin: 1.5, borderRadius: 2,
-              background: current ? '#a78bfa' : past ? '#7c3aed' : 'rgba(255,255,255,0.08)',
-              boxShadow: current ? '0 0 8px #a78bfa' : 'none',
-              transition: 'transform .1s',
-              transform: hover === w ? 'scale(1.6)' : 'scale(1)',
-              cursor: 'default',
-            }}
-          />
+          <div key={w} onMouseEnter={() => setHover(w)} onMouseLeave={() => setHover(null)}
+            style={{ width: 9, height: 9, margin: 1.5, borderRadius: 2, background: current ? '#a78bfa' : past ? '#7c3aed' : 'rgba(255,255,255,0.08)', boxShadow: current ? '0 0 8px #a78bfa' : 'none', transition: 'transform .1s', transform: hover === w ? 'scale(1.6)' : 'scale(1)', cursor: 'default' }} />
         );
       }
       rows.push(<div key={r} style={{ display: 'flex' }}>{cells}</div>);
@@ -132,57 +249,37 @@ export default function App() {
 
   const StatsTab = () => (
     <div>
-      <Card title="Votre vie" items={[
-        ['Semaines vécues', fmt(weeksLived)],
-        ['Semaines restantes', fmt(weeksRemaining)],
-        ['Jours vécus', fmt(daysLived)],
-        ['Saisons', fmt(seasons)],
-        ['Cycles lunaires', fmt(lunarCycles)],
-      ]} />
-      <Card title="Votre corps" items={[
-        ['Heures de sommeil', fmt(hoursSlept)],
-        ['Battements de cœur', fmt(heartbeats)],
-        ['Respirations', fmt(breaths)],
-      ]} />
-      <Card title="Le monde" items={[
-        ['Population à votre naissance', fmt(getPopulationAtYear(birthYear))],
-        ['Personnes probablement rencontrées', fmt(Math.round(80000 * pct / 100))],
-        ['Naissances depuis votre naissance', fmt(Math.round(daysLived * 385000))],
-      ]} />
+      <Card title="Votre vie" items={[['Semaines vécues', fmt(weeksLived)], ['Semaines restantes', fmt(weeksRemaining)], ['Jours vécus', fmt(daysLived)], ['Saisons', fmt(seasons)], ['Cycles lunaires', fmt(lunarCycles)]]} />
+      <Card title="Votre corps" items={[['Heures de sommeil', fmt(hoursSlept)], ['Battements de cœur', fmt(heartbeats)], ['Respirations', fmt(breaths)]]} />
+      <Card title="Le monde" items={[['Population à votre naissance', fmt(getPopulationAtYear(birthYear))], ['Personnes probablement rencontrées', fmt(Math.round(80000 * pct / 100))], ['Naissances depuis votre naissance', fmt(Math.round(daysLived * 385000))]]} />
+
+      {/* Story button */}
+      <button onClick={generateStory}
+        style={{ width: '100%', padding: '16px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', marginTop: 8, letterSpacing: 0.5 }}>
+        📸 Créer ma story
+      </button>
+      {storyGenerated && <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, textAlign: 'center', marginTop: 8 }}>Image téléchargée ! Partagez-la sur Instagram ou Snapchat 🎉</p>}
     </div>
   );
 
   const CosmosTab = () => (
     <div>
-      <Card title="Dans l'espace" items={[
-        ['km parcourus autour du Soleil', fmt(Math.round(daysLived * 1_600_000))],
-        ['km dans la Voie Lactée', fmt(Math.round(daysLived * 24 * 828000))],
-        ["% de l'âge de l'univers", (80 / 13_800_000_000 * 100).toFixed(10) + '%'],
-      ]} />
-      <Card title="Sur Terre" items={[
-        ['Tours autour du Soleil', fmt(years)],
-        ["% de la vie d'un séquoia (3000 ans)", ((years / 3000) * 100).toFixed(2) + '%'],
-        ['Vos cellules ont été renouvelées', '~7 fois'],
-      ]} />
+      <Card title="Dans l'espace" items={[['km parcourus autour du Soleil', fmt(Math.round(daysLived * 1_600_000))], ['km dans la Voie Lactée', fmt(Math.round(daysLived * 24 * 828000))], ["% de l'âge de l'univers", (80 / 13_800_000_000 * 100).toFixed(10) + '%']]} />
+      <Card title="Sur Terre" items={[['Tours autour du Soleil', fmt(years)], ["% de la vie d'un séquoia (3000 ans)", ((years / 3000) * 100).toFixed(2) + '%'], ['Vos cellules ont été renouvelées', '~7 fois']]} />
     </div>
   );
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', fontFamily: "'Segoe UI', sans-serif", paddingBottom: 40 }}>
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
       <div style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 700, margin: 0 }}>⏳ La vie en semaines</h1>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: 0 }}>{years} ans · {pct}% vécu</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => {
-            if (navigator.share) {
-              navigator.share({ title: 'La vie en semaines', text: 'Visualise ta vie en semaines 🕐', url: 'https://ma-vie-en-semaines.vercel.app' });
-            } else {
-              navigator.clipboard.writeText('https://ma-vie-en-semaines.vercel.app');
-              alert('Lien copié !');
-            }
-          }} style={{ background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+          <button onClick={() => { if (navigator.share) { navigator.share({ title: 'La vie en semaines', text: 'Visualise ta vie en semaines 🕐', url: 'https://ma-vie-en-semaines.vercel.app' }); } else { navigator.clipboard.writeText('https://ma-vie-en-semaines.vercel.app'); alert('Lien copié !'); } }}
+            style={{ background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
             🔗 Partager
           </button>
           <button onClick={() => setStats(null)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
@@ -196,11 +293,7 @@ export default function App() {
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px' }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 28, background: 'rgba(255,255,255,0.05)', padding: 6, borderRadius: 12, width: 'fit-content' }}>
           {TABS.map((t, i) => (
-            <button key={t} onClick={() => setTab(i)} style={{
-              padding: '8px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, transition: 'all .2s',
-              background: tab === i ? 'linear-gradient(135deg, #7c3aed, #a78bfa)' : 'transparent',
-              color: tab === i ? '#fff' : 'rgba(255,255,255,0.5)',
-            }}>{t}</button>
+            <button key={t} onClick={() => setTab(i)} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, transition: 'all .2s', background: tab === i ? 'linear-gradient(135deg, #7c3aed, #a78bfa)' : 'transparent', color: tab === i ? '#fff' : 'rgba(255,255,255,0.5)' }}>{t}</button>
           ))}
         </div>
         {tab === 0 && <WeekGrid />}
