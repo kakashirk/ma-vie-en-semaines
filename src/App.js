@@ -200,7 +200,7 @@ export default function App() {
         {tab === 1 && <StatsTab />}
         {tab === 2 && <CosmosTab />}
       </div>
-        <Analytics />
+      <Analytics />
     </div>
   );
-    }
+}
