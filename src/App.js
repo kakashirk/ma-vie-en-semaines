@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react';
 import { useState } from 'react';
 
 const fmt = (num) => new Intl.NumberFormat('fr-FR').format(num);
@@ -199,6 +200,7 @@ export default function App() {
         {tab === 1 && <StatsTab />}
         {tab === 2 && <CosmosTab />}
       </div>
+        <Analytics />
     </div>
   );
     }
