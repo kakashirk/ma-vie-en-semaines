@@ -1,5 +1,5 @@
-import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { useState } from 'react';
 
 const fmt = (num) => new Intl.NumberFormat('fr-FR').format(num);
@@ -157,11 +157,11 @@ export default function App() {
       <Card title="Dans l'espace" items={[
         ['km parcourus autour du Soleil', fmt(Math.round(daysLived * 1_600_000))],
         ['km dans la Voie Lactée', fmt(Math.round(daysLived * 24 * 828000))],
-        ['% de l\'âge de l\'univers', (80 / 13_800_000_000 * 100).toFixed(10) + '%'],
+        ["% de l'âge de l'univers", (80 / 13_800_000_000 * 100).toFixed(10) + '%'],
       ]} />
       <Card title="Sur Terre" items={[
         ['Tours autour du Soleil', fmt(years)],
-        ['% de la vie d\'un séquoia (3000 ans)', ((years / 3000) * 100).toFixed(2) + '%'],
+        ["% de la vie d'un séquoia (3000 ans)", ((years / 3000) * 100).toFixed(2) + '%'],
         ['Vos cellules ont été renouvelées', '~7 fois'],
       ]} />
     </div>
@@ -169,7 +169,6 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', fontFamily: "'Segoe UI', sans-serif", paddingBottom: 40 }}>
-      {/* Header */}
       <div style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 700, margin: 0 }}>⏳ La vie en semaines</h1>
@@ -179,14 +178,10 @@ export default function App() {
           ← Recommencer
         </button>
       </div>
-
-      {/* Progress bar */}
       <div style={{ height: 4, background: 'rgba(255,255,255,0.08)' }}>
         <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #7c3aed, #a78bfa)', transition: 'width 1s ease' }} />
       </div>
-
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px' }}>
-        {/* Tabs */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 28, background: 'rgba(255,255,255,0.05)', padding: 6, borderRadius: 12, width: 'fit-content' }}>
           {TABS.map((t, i) => (
             <button key={t} onClick={() => setTab(i)} style={{
@@ -196,7 +191,6 @@ export default function App() {
             }}>{t}</button>
           ))}
         </div>
-
         {tab === 0 && <WeekGrid />}
         {tab === 1 && <StatsTab />}
         {tab === 2 && <CosmosTab />}
